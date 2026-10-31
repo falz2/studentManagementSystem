@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer base {
+    body {
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    }
+}
+
+@layer components {
+    .status-pill {
+        @apply inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-semibold;
+    }
+
+    .status-active {
+        @apply border border-blue-100 bg-blue-50 text-[#2563eb];
+    }
+
+    .status-pending {
+        @apply border border-amber-100 bg-amber-50 text-[#d97706];
+    }
+
+    .status-neutral {
+        @apply border border-slate-200 bg-slate-50 text-slate-500;
+    }
+
+    .mobile-nav-link {
+        @apply rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-blue-50 hover:text-[#2563eb];
+    }
+}
