@@ -5,5 +5,12 @@
 @section('breadcrumb', config('management.students.title'))
 
 @section('content')
-    @include('management._table', ['resource' => config('management.students')])
+    @include('management._table', [
+        'entity' => 'students',
+        'title' => 'Students',
+        'singular' => 'student',
+        'description' => 'Student profiles and academic details.',
+        'columns' => ['Student', 'Student ID', 'Email', 'Programme', 'Year', 'Status'],
+        'records' => $records,
+    ])
 @endsection

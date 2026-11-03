@@ -5,5 +5,12 @@
 @section('breadcrumb', config('management.lecturers.title'))
 
 @section('content')
-    @include('management._table', ['resource' => config('management.lecturers')])
+    @include('management._table', [
+        'entity' => 'lecturers',
+        'title' => 'Lecturers',
+        'singular' => 'lecturer',
+        'description' => 'Teaching staff and their current course assignments.',
+        'columns' => ['Lecturer', 'Staff ID', 'Email', 'Department', 'Courses', 'Status'],
+        'records' => $records,
+    ])
 @endsection
