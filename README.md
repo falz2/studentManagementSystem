@@ -75,12 +75,8 @@ $user->forceFill(['role' => 'admin'])->save();
 
 Use `lecturer` instead of `admin` to grant lecturer dashboard access. Keep role assignment out of public registration.
 
-## Sample data
+## Database design
 
-Seed five student accounts and four courses in the configured database with:
-
-```bash
-php artisan migrate --seed
-```
-
-The sample student accounts use `password` as their password; only use these credentials in a local development environment. Seeding is repeatable and updates the sample records by email or course code.
+The business schema, entity relationships, integrity rules, and recommended
+path for adding academic terms are documented in
+[docs/database-design.md](docs/database-design.md).

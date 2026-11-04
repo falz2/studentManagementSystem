@@ -66,4 +66,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function studentProfile()
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function lecturerProfile()
+    {
+        return $this->hasOne(Lecturer::class);
+    }
 }
