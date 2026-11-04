@@ -68,13 +68,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function studentProfile(): HasOne
+    public function studentProfile()
     {
-        return $this->hasOne(StudentProfile::class);
+        return $this->hasOne(Student::class);
     }
 
-    public function lecturerProfile(): HasOne
+    public function lecturerProfile()
     {
-        return $this->hasOne(LecturerProfile::class);
+        return $this->hasOne(Lecturer::class);
     }
 }

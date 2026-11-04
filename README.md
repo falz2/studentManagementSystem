@@ -75,6 +75,8 @@ $user->forceFill(['role' => 'admin'])->save();
 
 Use `lecturer` instead of `admin` to grant lecturer dashboard access. Keep role assignment out of public registration.
 
-## Admin management
+## Database design
 
-Administrators can create, view, edit, and delete students, lecturers, courses, and student registrations from their dashboard. Student and lecturer creation also creates a role-specific login account; the administrator sets its initial password. Course assignments and registration links are maintained in the database, and deleting a student or course also deletes its registrations.
+The business schema, entity relationships, integrity rules, and recommended
+path for adding academic terms are documented in
+[docs/database-design.md](docs/database-design.md).
