@@ -74,3 +74,9 @@ $user->forceFill(['role' => 'admin'])->save();
 ```
 
 Use `lecturer` instead of `admin` to grant lecturer dashboard access. Keep role assignment out of public registration.
+
+## Database design
+
+The business schema, entity relationships, integrity rules, and recommended
+path for adding academic terms are documented in
+[docs/database-design.md](docs/database-design.md).
