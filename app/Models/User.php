@@ -23,22 +23,13 @@ class User extends Authenticatable
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',          // ← added: needed so seeders/forms can set it
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -46,20 +37,10 @@ class User extends Authenticatable
         'two_factor_secret',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
     protected $appends = [
         'profile_photo_url',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -68,13 +49,29 @@ class User extends Authenticatable
         ];
     }
 
-    public function studentProfile()
+    public function studentProfile(): HasOne
     {
-        return $this->hasOne(Student::class);
+        return $this->hasOne(StudentProfile::class);
     }
 
-    public function lecturerProfile()
+    public function lecturerProfile(): HasOne
     {
-        return $this->hasOne(Lecturer::class);
+        return $this->hasOne(LecturerProfile::class);
+    }
+
+    // Convenience helpers — optional but useful for route/middleware checks
+    public function isStudent(): bool
+    {
+        return $this->role === 'student';
+    }
+
+    public function isLecturer(): bool
+    {
+        return $this->role === 'lecturer';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

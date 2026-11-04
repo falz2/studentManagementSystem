@@ -3,55 +3,107 @@
 namespace Database\Seeders;
 
 use App\Models\Course;
+use App\Models\LecturerProfile;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class CourseSeeder extends Seeder
 {
     public function run(): void
     {
+        // 1. Ensure the lecturers referenced by the courses exist.
+        //    (idempotent — safe to run even if LecturerSeeder already ran)
+        $lecturers = [
+            [
+                'name' => 'Dr. Elena Vasquez',
+                'email' => 'elena.vasquez@northstar.edu',
+                'staff_number' => 'LEC-0001',
+                'department' => 'Computer Science',
+            ],
+            [
+                'name' => 'Prof. Samuel Okafor',
+                'email' => 'samuel.okafor@northstar.edu',
+                'staff_number' => 'LEC-0002',
+                'department' => 'Mathematics',
+            ],
+            [
+                'name' => 'Dr. Aisha Rahman',
+                'email' => 'aisha.rahman@northstar.edu',
+                'staff_number' => 'LEC-0003',
+                'department' => 'Information Systems',
+            ],
+        ];
+
+        $lecturerProfiles = [];
+
+        foreach ($lecturers as $data) {
+            $user = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make('password'),
+                    'email_verified_at' => now(),
+                    'role' => 'lecturer',
+                ]
+            );
+
+            $lecturerProfiles[$data['email']] = LecturerProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'staff_number' => $data['staff_number'],
+                    'department' => $data['department'],
+                    'status' => 'active',
+                ]
+            );
+        }
+
+        // 2. Courses — keyed by the lecturer's email
         $courses = [
             [
                 'code' => 'CS101',
                 'name' => 'Foundations of Computing',
-                'lecturer' => 'Dr. Elena Vasquez',
+                'lecturer_email' => 'elena.vasquez@northstar.edu',
                 'schedule' => 'Mon · 09:00',
                 'capacity' => 40,
-                'enrolled' => 32,
                 'status' => 'open',
             ],
             [
-                'code' => 'CS204',
+                'code' => 'CS201',
                 'name' => 'Data Structures & Algorithms',
-                'lecturer' => 'Prof. James Okoro',
+                'lecturer_email' => 'elena.vasquez@northstar.edu',
                 'schedule' => 'Tue · 11:00',
-                'capacity' => 30,
-                'enrolled' => 28,
-                'status' => 'almost full',
-            ],
-            [
-                'code' => 'CS220',
-                'name' => 'Database Systems',
-                'lecturer' => 'Dr. Elena Vasquez',
-                'schedule' => 'Wed · 13:00',
                 'capacity' => 35,
-                'enrolled' => 24,
                 'status' => 'open',
             ],
             [
-                'code' => 'CS315',
-                'name' => 'Human-Computer Interaction',
-                'lecturer' => 'Dr. Priya Nair',
-                'schedule' => 'Thu · 10:00',
-                'capacity' => 25,
-                'enrolled' => 18,
+                'code' => 'MTH101',
+                'name' => 'Discrete Mathematics',
+                'lecturer_email' => 'samuel.okafor@northstar.edu',
+                'schedule' => 'Wed · 08:00',
+                'capacity' => 50,
+                'status' => 'open',
+            ],
+            [
+                'code' => 'IS301',
+                'name' => 'Database Systems',
+                'lecturer_email' => 'aisha.rahman@northstar.edu',
+                'schedule' => 'Thu · 14:00',
+                'capacity' => 30,
                 'status' => 'open',
             ],
         ];
 
-        foreach ($courses as $course) {
+        foreach ($courses as $data) {
             Course::updateOrCreate(
-                ['code' => $course['code']],
-                $course,
+                ['code' => $data['code']],
+                [
+                    'name' => $data['name'],
+                    'lecturer_id' => $lecturerProfiles[$data['lecturer_email']]->id,
+                    'schedule' => $data['schedule'],
+                    'capacity' => $data['capacity'],
+                    'status' => $data['status'],
+                ]
             );
         }
     }

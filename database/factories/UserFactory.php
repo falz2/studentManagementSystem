@@ -70,4 +70,63 @@ class UserFactory extends Factory
             'ownedTeams'
         );
     }
+
+    /**
+     * Indicate that the user is a student.
+     */
+    public function student(): static
+    {
+        return $this->state(fn () => ['role' => 'student']);
+    }
+
+    /**
+     * Indicate that the user is a lecturer.
+     */
+    public function lecturer(): static
+    {
+        return $this->state(fn () => ['role' => 'lecturer']);
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn () => ['role' => 'admin']);
+    }
+
+    /**
+     * Create a student user together with a linked StudentProfile.
+     *
+     * Usage: User::factory()->withStudentProfile(['programme' => 'Engineering'])->create();
+     */
+    public function withStudentProfile(array $attributes = []): static
+    {
+        return $this->state(fn () => ['role' => 'student'])
+            ->afterCreating(function (User $user) use ($attributes) {
+                $user->studentProfile()->create(array_merge([
+                    'student_number' => 'STU-'.fake()->unique()->numerify('####-####'),
+                    'programme' => 'Computer Science',
+                    'year' => 1,
+                    'status' => 'active',
+                ], $attributes));
+            });
+    }
+
+    /**
+     * Create a lecturer user together with a linked LecturerProfile.
+     *
+     * Usage: User::factory()->withLecturerProfile(['department' => 'Maths'])->create();
+     */
+    public function withLecturerProfile(array $attributes = []): static
+    {
+        return $this->state(fn () => ['role' => 'lecturer'])
+            ->afterCreating(function (User $user) use ($attributes) {
+                $user->lecturerProfile()->create(array_merge([
+                    'staff_number' => 'LEC-'.fake()->unique()->numerify('####-####'),
+                    'department' => 'Computer Science',
+                    'status' => 'active',
+                ], $attributes));
+            });
+    }
 }
