@@ -9,7 +9,7 @@
             <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">Good morning, {{ auth()->user()->name }} <span class="text-[#d97706]" aria-hidden="true">✦</span></h1>
             <p class="mt-2 text-sm text-slate-500">Here’s what’s happening across your university today.</p>
         </div>
-        <a href="{{ route('admin.students') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]">
+        <a href="{{ route('admin.students.create') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]">
             <span class="text-lg leading-none" aria-hidden="true">+</span> Add a student
         </a>
     </div>

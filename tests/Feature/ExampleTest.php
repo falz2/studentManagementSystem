@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Course;
+use App\Models\Registration;
+use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -38,12 +41,46 @@ class ExampleTest extends TestCase
     public function test_students_can_only_access_their_own_dashboard(): void
     {
         $student = User::factory()->create();
+        $studentProfile = StudentProfile::create([
+            'user_id' => $student->id,
+            'student_number' => 'STU-001',
+            'programme' => 'Computer Science',
+            'year' => 2,
+            'status' => 'active',
+        ]);
+        $course = Course::create([
+            'name' => 'Database Systems',
+            'code' => 'CS220',
+            'schedule' => 'Wed 13:00',
+            'capacity' => 30,
+            'status' => 'open',
+        ]);
+        Registration::create([
+            'student_id' => $studentProfile->id,
+            'course_id' => $course->id,
+            'registered_at' => '2026-11-04',
+            'status' => 'confirmed',
+        ]);
+        $availableCourse = Course::create([
+            'name' => 'Software Design',
+            'code' => 'CS230',
+            'schedule' => 'Fri 10:00',
+            'capacity' => 20,
+            'status' => 'open',
+        ]);
 
         $this->actingAs($student)
             ->get('/dashboard')
             ->assertRedirect('/student');
 
-        $this->get('/student')->assertOk()->assertSee('My registrations')->assertSee('Registered courses');
+        $this->get('/student')->assertOk()->assertSee('My registrations')->assertSee('Registered courses')
+            ->assertSee('Database Systems')
+            ->assertSee(route('student.courses.show', $availableCourse))
+            ->assertDontSee(route('student.courses.show', $course));
+        $this->get(route('student.courses.show', $course))
+            ->assertOk()
+            ->assertSee('Database Systems')
+            ->assertSee('You are registered for this course.');
         $this->get('/lecturer')->assertForbidden();
         $this->get('/admin/students')->assertForbidden();
     }
@@ -57,11 +94,15 @@ class ExampleTest extends TestCase
             ->get('/dashboard')
             ->assertRedirect('/admin');
 
-        $this->get('/admin')->assertOk()->assertSee('Course capacity')->assertSee('Recent registrations');
+        $this->get('/admin')->assertOk()
+            ->assertSee('Course capacity')
+            ->assertSee('Recent registrations')
+            ->assertSee(route('admin.students.create'));
         $this->get('/admin/students')->assertOk()->assertSee('Student profiles');
         $this->get('/admin/courses')->assertOk()->assertSee('Course catalogue');
         $this->get('/admin/lecturers')->assertOk()->assertSee('Teaching staff');
         $this->get('/admin/registrations')->assertOk()->assertSee('Student enrolments');
+        $this->get(route('student.dashboard'))->assertForbidden();
         $this->get('/lecturer')->assertForbidden();
         $this->get('/admin/unknown')->assertNotFound();
     }
