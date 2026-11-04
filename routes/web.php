@@ -47,7 +47,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(fun
         ->middleware('role:lecturer')
         ->name('lecturer.dashboard');
 
-    Route::get('/student', [StudentDashboardController::class, 'index'])
-        ->middleware('role:student')
-        ->name('student.dashboard');
+    Route::middleware('role:student')->group(function () {
+        Route::get('/student', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+        Route::get('/student/courses/{course}', [StudentDashboardController::class, 'showCourse'])->name('student.courses.show');
+    });
 });
