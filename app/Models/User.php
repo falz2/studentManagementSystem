@@ -5,9 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
@@ -68,13 +68,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function studentProfile(): HasOne
+    public function studentProfile()
     {
-        return $this->hasOne(StudentProfile::class);
+        return $this->hasOne(Student::class);
     }
 
-    public function lecturerProfile(): HasOne
+    public function lecturerProfile()
     {
-        return $this->hasOne(LecturerProfile::class);
+        return $this->hasOne(Lecturer::class);
     }
 }
