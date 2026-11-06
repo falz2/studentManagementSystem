@@ -61,6 +61,7 @@ class StudentDashboardController extends Controller
     public function register(Request $request, Course $course): RedirectResponse
     {
         $user = $request->user();
+        // Provision defaults for student accounts that do not yet have a profile.
         $student = $user->studentProfile()->firstOrCreate([], [
             'student_number' => 'STU-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT),
             'programme' => 'Undeclared',
@@ -69,6 +70,7 @@ class StudentDashboardController extends Controller
         ]);
 
         $result = DB::transaction(function () use ($course, $student): string {
+            // Serialize capacity checks so concurrent requests cannot overfill the course.
             $course = Course::query()->withCount('registrations')->lockForUpdate()->findOrFail($course->id);
 
             if ($student->registrations()->where('course_id', $course->id)->exists()) {

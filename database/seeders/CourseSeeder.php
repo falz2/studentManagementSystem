@@ -12,8 +12,7 @@ class CourseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Ensure the lecturers referenced by the courses exist.
-        //    (idempotent — safe to run even if LecturerSeeder already ran)
+        // Create lecturer accounts and profiles first so each course can reference its lecturer.
         $lecturers = [
             [
                 'name' => 'Dr. Elena Vasquez',
@@ -58,7 +57,7 @@ class CourseSeeder extends Seeder
             );
         }
 
-        // 2. Courses — keyed by the lecturer's email
+        // Resolve lecturer profiles by email, then upsert courses by their unique code.
         $courses = [
             [
                 'code' => 'CS101',

@@ -53,6 +53,7 @@ class StudentController extends Controller
             'status' => ['required', Rule::in(['active', 'on_leave'])],
         ]);
 
+        // Keep the login account and student profile in sync if either write fails.
         DB::transaction(function () use ($data): void {
             $user = User::query()->forceCreate([
                 'name' => $data['name'],

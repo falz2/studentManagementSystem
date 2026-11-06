@@ -81,6 +81,7 @@ class RegistrationController extends Controller
             'student_id' => [
                 'required',
                 'exists:student_profiles,id',
+                // A student may register for multiple courses, but only once per course.
                 Rule::unique('registrations', 'student_id')
                     ->where('course_id', $request->input('course_id'))
                     ->ignore($registration?->id),

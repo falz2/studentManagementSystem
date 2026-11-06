@@ -20,14 +20,13 @@ class StudentSeeder extends Seeder
                 'year' => 2,
                 'status' => 'active',
             ],
-            // ... your other students in the same shape
         ];
 
         foreach ($students as $data) {
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'password' => Hash::make('password'),      // or Hash::make('Password123!')
+                'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'role' => 'student',
             ]);

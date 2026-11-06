@@ -45,6 +45,7 @@ return new class extends Migration
             $table->date('registered_at');
             $table->string('status')->default('pending');
             $table->timestamps();
+            // Enforce one registration per student/course pair at the database level.
             $table->unique(['student_id', 'course_id']);
         });
     }

@@ -27,7 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',          // ← added: needed so seeders/forms can set it
+        'role',
     ];
 
     protected $hidden = [
@@ -59,7 +59,6 @@ class User extends Authenticatable
         return $this->hasOne(LecturerProfile::class);
     }
 
-    // Convenience helpers — optional but useful for route/middleware checks
     public function isStudent(): bool
     {
         return $this->role === 'student';
