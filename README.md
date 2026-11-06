@@ -70,6 +70,7 @@ php artisan tinker
 
 ```php
 $user = App\Models\User::where('email', 'admin@example.edu')->firstOrFail();
+$user = App\Models\User::where('email', 'lubegajuma@gmail.com')->firstOrFail();
 $user->forceFill(['role' => 'admin'])->save();
 ```
 

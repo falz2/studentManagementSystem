@@ -101,6 +101,11 @@ class AdminManagementCrudTest extends TestCase
         ])->assertRedirect(route('admin.registrations'));
 
         $registration = Registration::firstOrFail();
+        $this->get(route('admin.registrations'))
+            ->assertOk()
+            ->assertSee($student->user->name)
+            ->assertSee($course->code);
+
         $this->post(route('admin.registrations.store'), [
             'student_id' => $student->id,
             'course_id' => $course->id,

@@ -23,7 +23,7 @@ class Registration extends Model
 
     public function student(): BelongsTo
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(StudentProfile::class, 'student_id');
     }
 
     public function course(): BelongsTo
