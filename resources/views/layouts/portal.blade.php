@@ -4,34 +4,38 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#ffffff">
-    <title>@yield('page-title', 'Dashboard') · Northstar University</title>
+    <title>@yield('page-title', 'Dashboard') · African Unity University</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white font-sans text-slate-900 antialiased">
-    <header class="relative z-30 border-b border-slate-200 bg-white">
-        <div class="flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
+        <div class="flex h-20 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-3">
                 <button type="button" data-sidebar-toggle aria-expanded="false" aria-controls="portal-sidebar" class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 lg:hidden" aria-label="Toggle navigation">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <a href="{{ $role === 'admin' ? route('admin.dashboard') : ($role === 'lecturer' ? route('lecturer.dashboard') : route('student.dashboard')) }}" class="flex items-center gap-3">
+                <a href="{{ $role === 'admin' ? route('admin.dashboard') : ($role === 'lecturer' ? route('lecturer.dashboard') : route('student.dashboard')) }}" class="flex min-w-0 items-center gap-3">
                     <span class="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-[#2563eb]">
                         <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 12v4.5c3.4 2.7 7.6 2.7 11 0V12M21 10v6"/></svg>
                     </span>
-                    <span>
-                        <span class="block text-sm font-semibold leading-tight text-slate-900">Northstar University</span>
+                    <span class="min-w-0">
+                        <span class="block truncate text-[13px] font-semibold leading-tight text-slate-900 sm:text-sm">African Unity University</span>
                         <span class="block text-[11px] text-slate-500">Student management system</span>
                     </span>
                 </a>
             </div>
             <div class="flex items-center gap-4">
+                <div class="hidden text-right sm:block">
+                    <span class="block max-w-40 truncate text-xs font-semibold text-slate-700">{{ auth()->user()->name }}</span>
+                    <span class="block text-[10px] capitalize text-slate-500">{{ $role }}</span>
+                </div>
                 <a href="{{ route('profile.show') }}" class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-[#2563eb]" title="{{ auth()->user()->name }}">{{ str(auth()->user()->name)->substr(0, 2)->upper() }}</a>
                 <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                     @csrf
-                    <button type="submit" class="text-sm font-medium text-slate-500 hover:text-[#2563eb]">Log out</button>
+                    <button type="submit" class="rounded-md px-2 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-[#2563eb]">Log out</button>
                 </form>
             </div>
         </div>
@@ -59,11 +63,15 @@
             </nav>
         </aside>
 
-        <main class="min-w-0 flex-1 px-4 pb-8 pt-8 sm:px-6 lg:px-8">
-            @yield('content')
-            <footer class="mt-12 flex flex-col gap-2 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                <span>© {{ now()->format('Y') }} African Union University</span>
-                <span>Student management system <span class="px-1 text-[#d97706]">·</span> Academic year 2026–2027</span>
+        <main class="flex min-w-0 flex-1 flex-col px-4 pb-8 pt-8 sm:px-6 lg:px-8">
+            <div class="flex-1">
+                @yield('content')
+            </div>
+            <footer class="mt-12 border-t border-slate-200 pt-5 text-xs text-slate-500">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span>© {{ now()->format('Y') }} African Unity University</span>
+                    <span class="flex flex-wrap gap-x-2 gap-y-1 sm:justify-end"><span>Student management system</span><span class="text-[#d97706]" aria-hidden="true">·</span><span>Academic year 2026–2027</span></span>
+                </div>
             </footer>
         </main>
     </div>
