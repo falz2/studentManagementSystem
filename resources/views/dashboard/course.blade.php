@@ -16,11 +16,17 @@
                 <div><dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</dt><dd class="mt-1 text-sm text-slate-700">{{ str($course->status)->title() }}</dd></div>
             </dl>
             @if ($isRegistered)
-                <p role="status" class="mt-8 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">You are registered for this course.</p>
-            @elseif ($course->status !== 'open' || $course->registrations_count >= $course->capacity)
-                <p role="status" class="mt-8 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">This course is not currently accepting registrations.</p>
+                <p role="status" class="mt-8 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">{{ session('success', 'You are already registered for this course.') }}</p>
+            @elseif (! $isOpen)
+                <p role="status" class="mt-8 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">{{ session('error', 'This course is not currently accepting registrations.') }}</p>
             @else
-                <p class="mt-8 text-sm text-slate-500">Contact an administrator to register for this course.</p>
+                @if (session('error'))
+                    <p role="alert" class="mt-8 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">{{ session('error') }}</p>
+                @endif
+                <form method="POST" action="{{ route('student.courses.register', $course) }}" class="mt-8">
+                    @csrf
+                    <button type="submit" class="rounded-lg bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1d4ed8] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Register for this course</button>
+                </form>
             @endif
         </section>
     </div>

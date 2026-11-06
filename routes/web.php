@@ -50,5 +50,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(fun
     Route::middleware('role:student')->group(function () {
         Route::get('/student', [StudentDashboardController::class, 'index'])->name('student.dashboard');
         Route::get('/student/courses/{course}', [StudentDashboardController::class, 'showCourse'])->name('student.courses.show');
+        Route::post('/student/courses/{course}/register', [StudentDashboardController::class, 'register'])->name('student.courses.register');
     });
 });

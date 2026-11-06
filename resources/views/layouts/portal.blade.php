@@ -62,7 +62,7 @@
         <main class="min-w-0 flex-1 px-4 pb-8 pt-8 sm:px-6 lg:px-8">
             @yield('content')
             <footer class="mt-12 flex flex-col gap-2 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                <span>© {{ now()->format('Y') }} Northstar University</span>
+                <span>© {{ now()->format('Y') }} African Union University</span>
                 <span>Student management system <span class="px-1 text-[#d97706]">·</span> Academic year 2026–2027</span>
             </footer>
         </main>

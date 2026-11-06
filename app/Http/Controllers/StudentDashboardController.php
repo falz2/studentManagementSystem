@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Registration;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StudentDashboardController extends Controller
 {
@@ -46,11 +48,52 @@ class StudentDashboardController extends Controller
         $student = $request->user()->studentProfile;
         $isRegistered = $student !== null
             && $course->registrations()->where('student_id', $student->id)->exists();
+        $isOpen = $course->status === 'open' && $course->registrations_count < $course->capacity;
 
         return view('dashboard.course', [
             'role' => 'student',
             'course' => $course,
             'isRegistered' => $isRegistered,
+            'isOpen' => $isOpen,
         ]);
+    }
+
+    public function register(Request $request, Course $course): RedirectResponse
+    {
+        $user = $request->user();
+        $student = $user->studentProfile()->firstOrCreate([], [
+            'student_number' => 'STU-'.str_pad((string) $user->id, 6, '0', STR_PAD_LEFT),
+            'programme' => 'Undeclared',
+            'year' => 1,
+            'status' => 'active',
+        ]);
+
+        $result = DB::transaction(function () use ($course, $student): string {
+            $course = Course::query()->withCount('registrations')->lockForUpdate()->findOrFail($course->id);
+
+            if ($student->registrations()->where('course_id', $course->id)->exists()) {
+                return 'already_registered';
+            }
+
+            if ($course->status !== 'open' || $course->registrations_count >= $course->capacity) {
+                return 'unavailable';
+            }
+
+            $student->registrations()->create([
+                'course_id' => $course->id,
+                'registered_at' => today(),
+                'status' => 'pending',
+            ]);
+
+            return 'registered';
+        });
+
+        $message = match ($result) {
+            'registered' => ['success', 'Your registration request has been submitted.'],
+            'already_registered' => ['error', 'You are already registered for this course.'],
+            default => ['error', 'This course is not currently accepting registrations.'],
+        };
+
+        return to_route('student.courses.show', $course)->with(...$message);
     }
 }
