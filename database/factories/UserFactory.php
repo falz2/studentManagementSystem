@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -31,7 +32,6 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => 'student',
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'remember_token' => Str::random(10),
@@ -76,7 +76,7 @@ class UserFactory extends Factory
      */
     public function student(): static
     {
-        return $this->state(fn () => ['role' => 'student']);
+        return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'student'));
     }
 
     /**
@@ -84,7 +84,7 @@ class UserFactory extends Factory
      */
     public function lecturer(): static
     {
-        return $this->state(fn () => ['role' => 'lecturer']);
+        return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'lecturer'));
     }
 
     /**
@@ -92,7 +92,7 @@ class UserFactory extends Factory
      */
     public function admin(): static
     {
-        return $this->state(fn () => ['role' => 'admin']);
+        return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'admin'));
     }
 
     /**
@@ -102,7 +102,7 @@ class UserFactory extends Factory
      */
     public function withStudentProfile(array $attributes = []): static
     {
-        return $this->state(fn () => ['role' => 'student'])
+        return $this->student()
             ->afterCreating(function (User $user) use ($attributes) {
                 $user->studentProfile()->create(array_merge([
                     'student_number' => 'STU-'.fake()->unique()->numerify('####-####'),
@@ -120,7 +120,7 @@ class UserFactory extends Factory
      */
     public function withLecturerProfile(array $attributes = []): static
     {
-        return $this->state(fn () => ['role' => 'lecturer'])
+        return $this->lecturer()
             ->afterCreating(function (User $user) use ($attributes) {
                 $user->lecturerProfile()->create(array_merge([
                     'staff_number' => 'LEC-'.fake()->unique()->numerify('####-####'),
@@ -128,5 +128,10 @@ class UserFactory extends Factory
                     'status' => 'active',
                 ], $attributes));
             });
+    }
+
+    private function assignRole(User $user, string $role): void
+    {
+        $user->assignRole(Role::findOrCreate($role, 'web'));
     }
 }

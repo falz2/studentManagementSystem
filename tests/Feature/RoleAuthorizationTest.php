@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RoleAuthorizationTest extends TestCase
@@ -33,7 +34,7 @@ class RoleAuthorizationTest extends TestCase
         ];
 
         foreach (['student', 'lecturer'] as $role) {
-            $user = User::factory()->create(['role' => $role]);
+            $user = User::factory()->{$role}()->create();
 
             foreach ($adminRoutes as $route) {
                 $this->actingAs($user)->get($route)->assertForbidden();
@@ -43,8 +44,8 @@ class RoleAuthorizationTest extends TestCase
 
     public function test_student_and_lecturer_dashboards_require_the_matching_role(): void
     {
-        $student = User::factory()->create(['role' => 'student']);
-        $lecturer = User::factory()->create(['role' => 'lecturer']);
+        $student = User::factory()->student()->create();
+        $lecturer = User::factory()->lecturer()->create();
 
         $this->actingAs($student)->get('/lecturer')->assertForbidden();
         $this->actingAs($lecturer)->get('/student')->assertForbidden();
@@ -52,7 +53,7 @@ class RoleAuthorizationTest extends TestCase
 
     public function test_admin_can_access_all_admin_portal_routes(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->admin()->create();
 
         foreach ([
             '/admin',
@@ -67,7 +68,8 @@ class RoleAuthorizationTest extends TestCase
 
     public function test_unknown_roles_are_denied_by_default(): void
     {
-        $user = User::factory()->create(['role' => 'unknown']);
+        $user = User::factory()->create();
+        $user->assignRole(Role::findOrCreate('unknown', 'web'));
 
         $this->actingAs($user)->get('/dashboard')->assertForbidden();
         $this->actingAs($user)->get('/admin')->assertForbidden();

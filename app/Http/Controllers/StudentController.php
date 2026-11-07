@@ -59,8 +59,8 @@ class StudentController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => $data['password'],
-                'role' => 'student',
             ]);
+            $user->assignRole('student');
 
             $user->studentProfile()->create(collect($data)->only(['student_number', 'programme', 'year', 'status'])->all());
         });

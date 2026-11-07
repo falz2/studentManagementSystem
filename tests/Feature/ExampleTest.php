@@ -32,15 +32,13 @@ class ExampleTest extends TestCase
             'role' => 'admin',
         ])->assertRedirect('/dashboard');
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'taylor@example.edu',
-            'role' => 'student',
-        ]);
+        $this->assertDatabaseHas('users', ['email' => 'taylor@example.edu']);
+        $this->assertTrue(User::where('email', 'taylor@example.edu')->firstOrFail()->hasRole('student'));
     }
 
     public function test_students_can_only_access_their_own_dashboard(): void
     {
-        $student = User::factory()->create();
+        $student = User::factory()->student()->create();
         $studentProfile = StudentProfile::create([
             'user_id' => $student->id,
             'student_number' => 'STU-001',
@@ -87,8 +85,7 @@ class ExampleTest extends TestCase
 
     public function test_administrators_can_access_admin_pages_but_not_other_role_dashboards(): void
     {
-        $admin = User::factory()->create();
-        $admin->forceFill(['role' => 'admin'])->save();
+        $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get('/dashboard')
@@ -109,8 +106,7 @@ class ExampleTest extends TestCase
 
     public function test_lecturers_are_redirected_to_their_own_dashboard(): void
     {
-        $lecturer = User::factory()->create();
-        $lecturer->forceFill(['role' => 'lecturer'])->save();
+        $lecturer = User::factory()->lecturer()->create();
 
         $this->actingAs($lecturer)
             ->get('/dashboard')

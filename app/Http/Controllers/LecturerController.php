@@ -58,8 +58,8 @@ class LecturerController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => $data['password'],
-                'role' => 'lecturer',
             ]);
+            $user->assignRole('lecturer');
 
             $user->lecturerProfile()->create(collect($data)->only(['staff_number', 'department', 'status'])->all());
         });

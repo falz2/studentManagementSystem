@@ -16,8 +16,8 @@ class StudentManagementRelationshipsTest extends TestCase
 
     public function test_student_course_and_lecturer_relationships_are_configured(): void
     {
-        $user = User::factory()->create(['role' => 'student']);
-        $lecturerUser = User::factory()->create(['role' => 'lecturer']);
+        $user = User::factory()->student()->create();
+        $lecturerUser = User::factory()->lecturer()->create();
 
         $student = Student::create([
             'user_id' => $user->id,

@@ -25,7 +25,6 @@ erDiagram
         bigint id PK
         string name
         string email UK
-        string role
         string password
         timestamp email_verified_at
         timestamps created_at_updated_at
@@ -78,7 +77,8 @@ means Laravel's `created_at` and `updated_at` columns.
 
 | Table | Responsibility | Important constraints |
 |---|---|---|
-| `users` | Login identity and authorization role (`student`, `lecturer`, or `admin`). | Unique email; role defaults to `student`. Admins do not need a student or lecturer profile. |
+| `users` | Login identity. Roles are assigned through Spatie Laravel Permission. | Unique email. Admins do not need a student or lecturer profile. |
+| `roles`, `permissions`, and their pivots | Spatie role definitions, user-role assignments, and role-permission grants. | Role names are `student`, `lecturer`, and `admin`; `model_has_roles` links roles to users and `role_has_permissions` links permissions to roles. |
 | `students` | Student number and academic profile. | Unique student number and profile email; optional user link. |
 | `lecturers` | Staff number and lecturer profile. | Unique staff number and profile email; optional user link. |
 | `courses` | Course catalogue, lecturer assignment, schedule, capacity, and availability. | Unique course code; lecturer assignment is optional. |
@@ -108,7 +108,7 @@ the database does not provide an efficient plan for them.
 
 ## Data integrity and application rules
 
-1. Keep account role assignment restricted to trusted administration; public
+1. Keep Spatie role assignment restricted to trusted administration; public
    sign-up should not accept a privileged role.
 2. Validate status values in the application. Suggested sets are student and
    lecturer: `active`, `on_leave`, `inactive`; course: `open`, `closed`; and
@@ -145,7 +145,9 @@ scope.
 ## Implementation note
 
 The currently implemented schema is defined in
-`database/migrations/2026_11_03_000001_create_student_management_tables.php`,
-with account roles in
-`database/migrations/2026_10_29_150000_add_role_to_users_table.php`. Apply
-schema changes through new Laravel migrations so existing data is preserved.
+`database/migrations/2026_11_03_000000_create_academic_management_tables.php`.
+User role assignments use Spatie Laravel Permission tables. The migration
+`database/migrations/2026_11_07_140404_migrate_user_roles_to_spatie_permission_roles.php`
+transfers existing `users.role` values to Spatie before removing the legacy
+column. Apply schema changes through new Laravel migrations so existing data
+is preserved.

@@ -9,11 +9,20 @@ class DashboardController extends Controller
 {
     public function index(Request $request): RedirectResponse
     {
-        return match ($request->user()->role) {
-            'admin' => to_route('admin.dashboard'),
-            'lecturer' => to_route('lecturer.dashboard'),
-            'student' => to_route('student.dashboard'),
-            default => abort(403),
-        };
+        $user = $request->user();
+
+        if ($user->hasRole('admin')) {
+            return to_route('admin.dashboard');
+        }
+
+        if ($user->hasRole('lecturer')) {
+            return to_route('lecturer.dashboard');
+        }
+
+        if ($user->hasRole('student')) {
+            return to_route('student.dashboard');
+        }
+
+        abort(403);
     }
 }

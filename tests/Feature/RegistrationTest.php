@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
+use App\Models\User;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -58,8 +59,8 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
-            'role' => 'student',
         ]);
+        $this->assertTrue(User::where('email', 'test@example.com')->firstOrFail()->hasRole('student'));
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 }

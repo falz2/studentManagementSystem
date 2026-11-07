@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
@@ -20,6 +21,7 @@ class User extends Authenticatable
     use HasFactory;
 
     use HasProfilePhoto;
+    use HasRoles;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
@@ -27,7 +29,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
     ];
 
     protected $hidden = [
@@ -61,16 +62,16 @@ class User extends Authenticatable
 
     public function isStudent(): bool
     {
-        return $this->role === 'student';
+        return $this->hasRole('student');
     }
 
     public function isLecturer(): bool
     {
-        return $this->role === 'lecturer';
+        return $this->hasRole('lecturer');
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->hasRole('admin');
     }
 }

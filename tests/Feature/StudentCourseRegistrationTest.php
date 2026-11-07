@@ -50,7 +50,7 @@ class StudentCourseRegistrationTest extends TestCase
 
     public function test_student_without_a_profile_can_register_for_a_course(): void
     {
-        $user = User::factory()->create(['role' => 'student']);
+        $user = User::factory()->student()->create();
         $course = $this->createCourse();
 
         $this->actingAs($user)
@@ -93,7 +93,7 @@ class StudentCourseRegistrationTest extends TestCase
     private function createStudent(string $studentNumber): StudentProfile
     {
         return StudentProfile::create([
-            'user_id' => User::factory()->create(['role' => 'student'])->id,
+            'user_id' => User::factory()->student()->create()->id,
             'student_number' => $studentNumber,
             'programme' => 'Computing',
             'year' => 1,

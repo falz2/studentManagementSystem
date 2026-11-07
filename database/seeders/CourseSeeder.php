@@ -6,7 +6,6 @@ use App\Models\Course;
 use App\Models\LecturerProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class CourseSeeder extends Seeder
 {
@@ -41,11 +40,11 @@ class CourseSeeder extends Seeder
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
-                    'password' => Hash::make('password'),
+                    'password' => 'password',
                     'email_verified_at' => now(),
-                    'role' => 'lecturer',
                 ]
             );
+            $user->syncRoles('lecturer');
 
             $lecturerProfiles[$data['email']] = LecturerProfile::firstOrCreate(
                 ['user_id' => $user->id],

@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
+use App\Models\StudentProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class DatabaseSeederTest extends TestCase
@@ -16,19 +18,30 @@ class DatabaseSeederTest extends TestCase
         $this->seed();
         $this->seed();
 
-        $this->assertSame(5, User::where('role', 'student')->count());
+        $this->assertSame(5, StudentProfile::count());
+        $this->assertSame(5, User::role('student')->count());
+        $this->assertSame(3, User::role('lecturer')->count());
+        $this->assertSame(1, User::role('admin')->count());
         $this->assertSame(4, Course::count());
-        $this->assertDatabaseHas('users', [
-            'email' => 'maya.chen@northstar.edu',
+        $this->assertDatabaseHas('student_profiles', [
             'student_number' => 'STU-2024-0182',
             'programme' => 'Computer Science',
-            'year_of_study' => 2,
+            'year' => 2,
         ]);
         $this->assertDatabaseHas('courses', [
-            'code' => 'CS220',
+            'code' => 'IS301',
             'name' => 'Database Systems',
-            'capacity' => 35,
-            'enrolled' => 24,
+            'capacity' => 30,
         ]);
+
+        foreach ([
+            'admin@northstar.edu' => 'admin',
+            'elena.vasquez@northstar.edu' => 'lecturer',
+            'maya.chen@northstar.edu' => 'student',
+        ] as $email => $role) {
+            $user = User::where('email', $email)->firstOrFail();
+            $this->assertTrue($user->hasRole($role));
+            $this->assertTrue(Hash::check('password', $user->password));
+        }
     }
 }

@@ -16,7 +16,7 @@ class AdminManagementCrudTest extends TestCase
 
     public function test_admin_can_create_update_and_delete_a_student(): void
     {
-        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->actingAs(User::factory()->admin()->create());
 
         $this->post(route('admin.students.store'), [
             'name' => 'Avery Student',
@@ -29,7 +29,7 @@ class AdminManagementCrudTest extends TestCase
         ])->assertRedirect(route('admin.students'));
 
         $student = StudentProfile::with('user')->firstOrFail();
-        $this->assertSame('student', $student->user->role);
+        $this->assertTrue($student->user->hasRole('student'));
         $this->assertDatabaseHas('student_profiles', ['student_number' => 'STU-100']);
 
         $this->put(route('admin.students.update', $student), [
@@ -52,7 +52,7 @@ class AdminManagementCrudTest extends TestCase
 
     public function test_admin_can_manage_lecturers_courses_and_registrations(): void
     {
-        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->actingAs(User::factory()->admin()->create());
 
         $this->post(route('admin.lecturers.store'), [
             'name' => 'Morgan Lecturer',
@@ -64,9 +64,9 @@ class AdminManagementCrudTest extends TestCase
         ])->assertRedirect(route('admin.lecturers'));
 
         $lecturer = LecturerProfile::firstOrFail();
-        $this->assertSame('lecturer', $lecturer->user->role);
+        $this->assertTrue($lecturer->user->hasRole('lecturer'));
         $student = StudentProfile::create([
-            'user_id' => User::factory()->create(['role' => 'student'])->id,
+            'user_id' => User::factory()->student()->create()->id,
             'student_number' => 'STU-200',
             'programme' => 'Computing',
             'year' => 1,
@@ -130,7 +130,7 @@ class AdminManagementCrudTest extends TestCase
 
     public function test_non_admin_users_cannot_access_management_pages(): void
     {
-        $this->actingAs(User::factory()->create(['role' => 'student']));
+        $this->actingAs(User::factory()->student()->create());
 
         $this->get(route('admin.students'))->assertForbidden();
         $this->post(route('admin.students.store'))->assertForbidden();
