@@ -9,12 +9,13 @@ export default {
         './vendor/laravel/jetstream/**/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
+        './resources/js/**/*.jsx',
     ],
 
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['Nunito', 'Inter', ...defaultTheme.fontFamily.sans],
             },
         },
     },

@@ -4,6 +4,11 @@
             <x-authentication-card-logo />
         </x-slot>
 
+        <div class="mb-6">
+            <h1 class="text-2xl font-extrabold text-[#2B2B2B]">Create your account</h1>
+            <p class="mt-1 text-sm text-[#68695f]">Join local farmers, buyers, and suppliers on PoultryHub.</p>
+        </div>
+
         <x-validation-errors class="mb-4" />
 
         <form method="POST" action="{{ route('register') }}">
@@ -19,7 +24,17 @@
                 <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
             </div>
 
-            <p class="mt-2 text-xs leading-5 text-slate-500">New accounts are created as students. Contact an administrator if you need lecturer access.</p>
+            <div class="mt-4">
+                <x-label for="role" value="{{ __('I am joining as') }}" />
+                <select id="role" name="role" required class="block mt-1 w-full rounded-xl border-[#dcd2be] shadow-sm focus:border-[#4A7C59] focus:ring-[#4A7C59]">
+                    <option value="consumer" @selected(old('role', 'consumer') === 'consumer')>Consumer — shop poultry and feed</option>
+                    <option value="farmer" @selected(old('role') === 'farmer')>Farmer — sell poultry products</option>
+                    <option value="supplier" @selected(old('role') === 'supplier')>Feed supplier — list poultry feed</option>
+                </select>
+                @error('role')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
 
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Password') }}" />
@@ -39,8 +54,8 @@
 
                             <div class="ms-2">
                                 {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                                        'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="underline text-sm text-slate-600 hover:text-[#2563eb] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">'.__('Terms of Service').'</a>',
-                                        'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="underline text-sm text-slate-600 hover:text-[#2563eb] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">'.__('Privacy Policy').'</a>',
+                                        'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="underline text-sm text-[#68695f] hover:text-[#C96F4A] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C96F4A]">'.__('Terms of Service').'</a>',
+                                        'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="underline text-sm text-[#68695f] hover:text-[#C96F4A] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C96F4A]">'.__('Privacy Policy').'</a>',
                                 ]) !!}
                             </div>
                         </div>
@@ -48,12 +63,12 @@
                 </div>
             @endif
 
-            <div class="flex items-center justify-end mt-4">
-                <a class="underline text-sm text-slate-600 hover:text-[#2563eb] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('login') }}">
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <a class="underline text-sm text-[#68695f] hover:text-[#C96F4A] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C96F4A]" href="{{ route('login') }}">
                     {{ __('Already registered?') }}
                 </a>
 
-                <x-button class="ms-4">
+                <x-button>
                     {{ __('Register') }}
                 </x-button>
             </div>

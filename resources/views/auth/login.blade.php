@@ -4,6 +4,11 @@
             <x-authentication-card-logo />
         </x-slot>
 
+        <div class="mb-6">
+            <h1 class="text-2xl font-extrabold text-[#2B2B2B]">Welcome back</h1>
+            <p class="mt-1 text-sm text-[#68695f]">Sign in to continue to your PoultryHub account.</p>
+        </div>
+
         <x-validation-errors class="mb-4" />
 
         @session('status')
@@ -32,14 +37,14 @@
                 </label>
             </div>
 
-            <div class="flex items-center justify-end mt-4">
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
                 @if (Route::has('password.request'))
-                    <a class="underline text-sm text-slate-600 hover:text-[#2563eb] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" href="{{ route('password.request') }}">
+                    <a class="underline text-sm text-[#68695f] hover:text-[#C96F4A] rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C96F4A]" href="{{ route('password.request') }}">
                         {{ __('Forgot your password?') }}
                     </a>
                 @endif
 
-                <x-button class="ms-4">
+                <x-button>
                     {{ __('Log in') }}
                 </x-button>
             </div>
@@ -47,8 +52,8 @@
 
         @if (Route::has('register'))
             <p class="mt-6 border-t border-slate-100 pt-4 text-center text-sm text-slate-500">
-                New to Northstar?
-                <a class="font-semibold text-[#2563eb] hover:text-[#1d4ed8]" href="{{ route('register') }}">Create an account</a>
+                New to PoultryHub?
+                <a class="font-bold text-[#C96F4A] hover:text-[#b86140]" href="{{ route('register') }}">Create an account</a>
             </p>
         @endif
     </x-authentication-card>

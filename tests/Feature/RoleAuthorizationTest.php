@@ -18,52 +18,43 @@ class RoleAuthorizationTest extends TestCase
         $this->withoutVite();
     }
 
-    public function test_admin_portal_requires_authentication(): void
+    public function test_marketplace_and_orders_require_authentication(): void
     {
-        $this->get('/admin')->assertRedirect('/login');
+        $this->get('/marketplace')->assertRedirect('/login');
+        $this->get('/orders')->assertRedirect('/login');
     }
 
-    public function test_only_admins_can_access_admin_portal_routes(): void
+    public function test_sellers_can_manage_listings_and_incoming_orders(): void
     {
-        $adminRoutes = [
-            '/admin',
-            '/admin/students',
-            '/admin/courses',
-            '/admin/lecturers',
-            '/admin/registrations',
-        ];
-
-        foreach (['student', 'lecturer'] as $role) {
+        foreach (['farmer', 'supplier'] as $role) {
             $user = User::factory()->{$role}()->create();
 
-            foreach ($adminRoutes as $route) {
-                $this->actingAs($user)->get($route)->assertForbidden();
-            }
+            $this->actingAs($user)->get('/seller')->assertOk();
+            $this->actingAs($user)->get('/seller/products')->assertOk();
+            $this->actingAs($user)->get('/seller/products/create')->assertOk();
+            $this->actingAs($user)->get('/seller/orders')->assertOk();
+            $this->actingAs($user)->get('/seller/analytics')->assertOk();
         }
     }
 
-    public function test_student_and_lecturer_dashboards_require_the_matching_role(): void
+    public function test_consumers_can_shop_but_cannot_access_seller_tools(): void
     {
-        $student = User::factory()->student()->create();
-        $lecturer = User::factory()->lecturer()->create();
+        $consumer = User::factory()->consumer()->create();
 
-        $this->actingAs($student)->get('/lecturer')->assertForbidden();
-        $this->actingAs($lecturer)->get('/student')->assertForbidden();
+        $this->actingAs($consumer)->get('/marketplace')->assertOk();
+        $this->actingAs($consumer)->get('/cart')->assertOk();
+        $this->actingAs($consumer)->get('/orders')->assertOk();
+        $this->actingAs($consumer)->get('/seller')->assertForbidden();
+        $this->actingAs($consumer)->get('/seller/products')->assertForbidden();
+        $this->actingAs($consumer)->get('/seller/orders')->assertForbidden();
     }
 
-    public function test_admin_can_access_all_admin_portal_routes(): void
+    public function test_admin_is_separate_from_public_seller_roles(): void
     {
         $admin = User::factory()->admin()->create();
 
-        foreach ([
-            '/admin',
-            '/admin/students',
-            '/admin/courses',
-            '/admin/lecturers',
-            '/admin/registrations',
-        ] as $route) {
-            $this->actingAs($admin)->get($route)->assertOk();
-        }
+        $this->actingAs($admin)->get('/admin')->assertOk();
+        $this->actingAs($admin)->get('/seller')->assertForbidden();
     }
 
     public function test_unknown_roles_are_denied_by_default(): void
@@ -72,6 +63,6 @@ class RoleAuthorizationTest extends TestCase
         $user->assignRole(Role::findOrCreate('unknown', 'web'));
 
         $this->actingAs($user)->get('/dashboard')->assertForbidden();
-        $this->actingAs($user)->get('/admin')->assertForbidden();
+        $this->actingAs($user)->get('/seller')->assertForbidden();
     }
 }

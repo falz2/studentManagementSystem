@@ -1,153 +1,187 @@
-# Database Design
+# PoultryHub Database Design
 
-## Scope and assumptions
+## Scope
 
-This design reflects the current student-management features: account and role
-management, student and lecturer profiles, a course catalogue, and student
-registrations. Laravel authentication, sessions, cache, queues, passkeys, and
-API tokens remain in their framework-managed tables.
+PoultryHub stores seller listings, buyer orders, and immutable item snapshots
+for marketplace history. Authentication and role assignments use Laravel and
+Spatie-managed tables. The cart is stored in the user's session; it is checked
+against live product stock at checkout.
 
-The business schema below matches the current migrations. Recommendations for
-academic terms and data retention are called out separately so they are not
-mistaken for features already implemented.
-
-## Entity relationship diagram
+## Entity relationships
 
 ```mermaid
 erDiagram
-    USERS o|--o{ STUDENTS : "linked profile"
-    USERS o|--o{ LECTURERS : "linked profile"
-    LECTURERS o|--o{ COURSES : teaches
-    STUDENTS ||--o{ REGISTRATIONS : makes
-    COURSES ||--o{ REGISTRATIONS : receives
+    USERS ||--o{ PRODUCTS : lists
+    USERS ||--o{ ORDERS : buys
+    USERS o|--o{ ORDERS : fulfills
+    USERS ||--o{ ADDRESSES : saves
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    PRODUCTS o|--o{ ORDER_ITEMS : snapshot_of
+    ORDER_ITEMS ||--o| REVIEWS : reviewed_by
+    ORDERS ||--o| CONVERSATIONS : discusses
+    CONVERSATIONS ||--o{ MESSAGES : contains
+    USERS ||--o{ RECURRING_ORDERS : schedules
+    USERS ||--o{ MESSAGES : sends
+    ORDERS ||--o| DELIVERY_SHARES : tracks
+    PRODUCTS ||--o{ RECURRING_ORDERS : supplies
 
     USERS {
         bigint id PK
         string name
         string email UK
         string password
-        timestamp email_verified_at
-        timestamps created_at_updated_at
+        decimal latitude
+        decimal longitude
+        boolean map_visible
     }
-    STUDENTS {
+    PRODUCTS {
+        bigint id PK
+        bigint seller_id FK
+        string category
+        string name
+        unsigned_bigint price
+        unsigned_integer quantity
+        string unit
+        string status
+        unsigned_integer low_stock_threshold
+        date expires_at
+    }
+    ORDERS {
+        bigint id PK
+        bigint buyer_id FK
+        bigint seller_id FK
+        string order_number UK
+        unsigned_bigint total
+        string status
+        text notes
+        string delivery_status
+        timestamp estimated_delivery_at
+    }
+    ORDER_ITEMS {
+        bigint id PK
+        bigint order_id FK
+        bigint product_id FK
+        string product_name
+        string category
+        string unit
+        unsigned_integer quantity
+        unsigned_bigint unit_price
+        unsigned_bigint total
+    }
+    ADDRESSES {
         bigint id PK
         bigint user_id FK
-        string student_number UK
-        string name
-        string email UK
-        string programme
-        string year_level
-        string status
-        timestamps created_at_updated_at
+        string label
+        string recipient_name
+        string phone
+        string district
+        string subcounty
+        string village
+        boolean is_default
     }
-    LECTURERS {
+    REVIEWS {
         bigint id PK
-        bigint user_id FK
-        string staff_number UK
-        string name
-        string email UK
-        string department
-        string status
-        timestamps created_at_updated_at
+        bigint order_item_id FK UK
+        bigint product_id FK
+        bigint buyer_id FK
+        unsigned_tinyint rating
     }
-    COURSES {
+    CONVERSATIONS {
         bigint id PK
-        bigint lecturer_id FK
-        string code UK
-        string name
-        string schedule
-        unsigned_integer capacity
-        string status
-        timestamps created_at_updated_at
+        bigint order_id FK UK
+        bigint buyer_id FK
+        bigint seller_id FK
     }
-    REGISTRATIONS {
+    MESSAGES {
         bigint id PK
-        bigint student_id FK
-        bigint course_id FK
+        bigint conversation_id FK
+        bigint sender_id FK
+        text body
+        timestamp read_at
+    }
+    RECURRING_ORDERS {
+        bigint id PK
+        bigint buyer_id FK
+        bigint seller_id FK
+        bigint product_id FK
+        unsigned_integer quantity
+        string frequency
+        timestamp next_run_at
         string status
-        timestamp registered_at
-        timestamps created_at_updated_at
+    }
+    DELIVERY_SHARES {
+        bigint id PK
+        bigint order_id FK UK
+        char token_hash UK
+        decimal latitude
+        decimal longitude
+        decimal accuracy_meters
+        timestamp location_updated_at
+        timestamp expires_at
+        timestamp revoked_at
     }
 ```
 
-`UK` denotes a unique constraint. `FK` denotes a foreign key. `timestamps`
-means Laravel's `created_at` and `updated_at` columns.
+`UK` denotes a unique constraint, and `FK` denotes a foreign key. All business
+tables include Laravel timestamps.
 
-## Tables and responsibilities
+## Tables and integrity rules
 
-| Table | Responsibility | Important constraints |
-|---|---|---|
-| `users` | Login identity. Roles are assigned through Spatie Laravel Permission. | Unique email. Admins do not need a student or lecturer profile. |
-| `roles`, `permissions`, and their pivots | Spatie role definitions, user-role assignments, and role-permission grants. | Role names are `student`, `lecturer`, and `admin`; `model_has_roles` links roles to users and `role_has_permissions` links permissions to roles. |
-| `students` | Student number and academic profile. | Unique student number and profile email; optional user link. |
-| `lecturers` | Staff number and lecturer profile. | Unique staff number and profile email; optional user link. |
-| `courses` | Course catalogue, lecturer assignment, schedule, capacity, and availability. | Unique course code; lecturer assignment is optional. |
-| `registrations` | Student-to-course enrolment and its status/timestamp. | Unique `(student_id, course_id)` prevents duplicate enrolment in the same course. |
+| Table | Responsibility and constraints |
+|---|---|
+| `users` | Login identity and optional seller coordinates. Only farmer/supplier accounts with `map_visible = true` and both coordinates appear on the signed-in map. |
+| `products` | A farmer or supplier listing. `seller_id` references its owner; categories are poultry or feed; prices are whole UGX; quantity cannot be negative. |
+| `orders` | One buyer-to-seller order, with a unique human-readable order number, whole-UGX total, notes, copied recipient/address details, fulfillment status, delivery status and timestamps. A cart containing multiple sellers becomes one order per seller. |
+| `order_items` | Product and price snapshot at purchase time. Retains names, category, unit, quantity, and amounts if a listing is later deleted. |
+| `addresses` | Buyer-owned saved delivery locations. Checkout copies the selected address onto the order. |
+| `reviews` | One review per order item (`order_item_id` is unique); rating is accepted only from the buyer of a completed order. |
+| `conversations` | One buyer/seller conversation per order (`order_id` is unique). Access is checked against the order participants. |
+| `messages` | Conversation messages with a sender and optional read timestamp. |
+| `recurring_orders` | Buyer-owned weekly or monthly supplier-feed schedule; each run creates an ordinary pending order after stock and listing checks. |
+| `notifications` | Laravel database notifications for order, message, review, and inventory events. |
+| `delivery_shares` | One expiring/revocable GPS-sharing token per order. The SHA-256 token hash and latest coordinate are stored; raw bearer tokens are not. |
+| `roles`, `permissions`, and pivots | Spatie-managed role assignments. Public registration only permits farmer, supplier, and consumer. |
 
-Primary keys are Laravel-generated unsigned big integers. Foreign keys are
-indexed by Laravel. The registration pair has a composite unique index, which
-also supports lookups by student followed by course. Add a separate
-`(course_id, student_id)` index if course roster queries become frequent and
-the database does not provide an efficient plan for them.
+Deleting a user removes their product listings and buyer orders. If a seller
+account is removed, the nullable `orders.seller_id` is cleared and order item
+snapshots remain. Deleting a product clears `order_items.product_id` while
+preserving the purchase record. Deleting an order cascades to its items.
 
-## Relationships and delete behavior
+Product ownership is checked for each seller edit/delete operation. Supplier
+product validation only permits the feed category. Checkout re-reads and locks
+all cart products in a transaction, verifies status and available quantities,
+records item snapshots, and decrements stock in the same transaction. An
+invalid or stale cart does not create partial orders.
 
-- Profile-to-user links are optional. The current schema does not enforce a
-  one-profile-per-user rule because `students.user_id` and `lecturers.user_id`
-  are nullable and not unique. Add unique constraints if one-to-one profile
-  ownership is required.
-- A lecturer may teach multiple courses; each course has zero or one lecturer.
-- Students and courses have a many-to-many relationship through
-  `registrations`.
-- Deleting a user preserves their profile by setting the profile's `user_id`
-  to `NULL`. Deleting a lecturer preserves their courses by setting
-  `lecturer_id` to `NULL`.
-- Deleting a student or course currently cascades to its registrations. This
-  removes enrolment history. Prefer deactivation/soft deletion or a restrictive
-  delete policy if historical records must be retained.
+Order status changes are restricted to `pending` → `confirmed` →
+`completed`, and only the associated seller can update them. Delivery follows
+`not_scheduled` → `scheduled` → `in_transit` → `delivered`; a delivered order
+is also marked completed. Buyers may cancel their own pending order;
+cancellation and stock restoration occur in one transaction. Analytics count
+only completed order totals within the selected 7-, 30-, or 90-day range.
+Expired product listings are hidden from the marketplace and rejected at
+checkout. Inventory notification checks are deduplicated while a low-stock
+condition remains active. Seller coordinates are shown only after an explicit
+opt-in. A delivery-share token is generated only for an in-transit order and is
+shared with a rider as a URL fragment; its hash is stored in the database.
+Only the order buyer and seller can access the authenticated tracking endpoint.
+The bearer-link endpoint supports rider updates and polling, is throttled, and
+stops accepting updates after expiry, revocation, or delivery completion.
+Delivery GPS is cleared on completion/revocation and by an hourly expiry
+cleanup. The Leaflet map displays OpenStreetMap tiles, which require an internet
+connection but no API key; GPS values are sent only to the PoultryHub
+delivery-location endpoints.
 
-## Data integrity and application rules
+## Implementation
 
-1. Keep Spatie role assignment restricted to trusted administration; public
-   sign-up should not accept a privileged role.
-2. Validate status values in the application. Suggested sets are student and
-   lecturer: `active`, `on_leave`, `inactive`; course: `open`, `closed`; and
-   registration: `pending`, `confirmed`, `waitlisted`, `dropped`.
-3. Ensure course capacity is positive. Enforce the capacity limit in a
-   transaction that locks the course row while counting confirmed
-   registrations; a simple validation before insert can overbook under
-   concurrent requests.
-4. Treat `registered_at` as the time the registration is created or confirmed,
-   and define that choice consistently. Keep registration status changes on
-   the registration row rather than creating duplicate rows.
-5. Student and lecturer profile `name` and `email` duplicate the account
-   identity fields. Keep them synchronized if they represent the same
-   institutional identity. If profile contact details are intentionally
-   independent, label and validate them as such.
-
-## Known limitation and evolution path
-
-The current unique `(student_id, course_id)` rule only allows a student to
-register for a course once, ever. If courses repeat by semester or academic
-year, introduce:
-
-- `academic_terms(id, name, starts_on, ends_on, status)`;
-- `course_offerings(id, course_id, term_id, lecturer_id, section, schedule,
-  capacity, status)`, unique on `(course_id, term_id, section)`;
-- change `registrations` to reference `course_offering_id`, unique on
-  `(student_id, course_offering_id)`.
-
-This separates the permanent course catalogue from term-specific teaching,
-capacity, schedule, and lecturer assignment, while retaining a normalized
-registration history. Add grade/assessment tables only when grading is in
-scope.
-
-## Implementation note
-
-The currently implemented schema is defined in
-`database/migrations/2026_11_03_000000_create_academic_management_tables.php`.
-User role assignments use Spatie Laravel Permission tables. The migration
-`database/migrations/2026_11_07_140404_migrate_user_roles_to_spatie_permission_roles.php`
-transfers existing `users.role` values to Spatie before removing the legacy
-column. Apply schema changes through new Laravel migrations so existing data
-is preserved.
+The active schema is defined in
+`database/migrations/2026_11_21_000001_create_poultryhub_marketplace_tables.php`
+and
+`database/migrations/2026_11_21_000002_add_marketplace_workflows.php` and
+`database/migrations/2026_11_21_000003_add_leaflet_maps.php`.
+`Product`, `Order`, `OrderItem`, `Address`, `Review`, `Conversation`, `Message`,
+`RecurringOrder`, and `DeliveryShare` define the Eloquent relationships. Leaflet
+renders maps in the browser; `FarmMapController` returns only opted-in seller
+coordinates. The older
+academic-management migration and model classes are retained for compatibility
+with pre-existing local data, but are not used by current PoultryHub routes.

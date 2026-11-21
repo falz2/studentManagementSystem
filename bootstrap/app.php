@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'delivery-share/location',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
