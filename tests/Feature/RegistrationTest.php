@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Jetstream;
-use App\Models\User;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -52,7 +52,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'role' => 'admin',
+            'role' => 'farmer',
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
         ]);
 
@@ -60,7 +60,21 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',
         ]);
-        $this->assertTrue(User::where('email', 'test@example.com')->firstOrFail()->hasRole('student'));
+        $this->assertTrue(User::where('email', 'test@example.com')->firstOrFail()->hasRole('farmer'));
         $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_public_registration_cannot_assign_administrator_access(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'admin-attempt@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'admin',
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature(),
+        ])->assertSessionHasErrors('role');
+
+        $this->assertDatabaseMissing('users', ['email' => 'admin-attempt@example.com']);
     }
 }

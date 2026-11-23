@@ -15,12 +15,12 @@ class DashboardController extends Controller
             return to_route('admin.dashboard');
         }
 
-        if ($user->hasRole('lecturer')) {
-            return to_route('lecturer.dashboard');
+        if ($user->hasAnyRole(['farmer', 'supplier'])) {
+            return to_route('seller.dashboard');
         }
 
-        if ($user->hasRole('student')) {
-            return to_route('student.dashboard');
+        if ($user->hasAnyRole(['consumer', 'student', 'lecturer'])) {
+            return to_route('marketplace.index');
         }
 
         abort(403);

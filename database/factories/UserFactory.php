@@ -87,6 +87,21 @@ class UserFactory extends Factory
         return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'lecturer'));
     }
 
+    public function farmer(): static
+    {
+        return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'farmer'));
+    }
+
+    public function supplier(): static
+    {
+        return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'supplier'));
+    }
+
+    public function consumer(): static
+    {
+        return $this->afterCreating(fn (User $user) => $this->assignRole($user, 'consumer'));
+    }
+
     /**
      * Indicate that the user is an admin.
      */

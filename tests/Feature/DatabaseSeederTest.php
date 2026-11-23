@@ -2,8 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Course;
-use App\Models\StudentProfile;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -13,35 +12,37 @@ class DatabaseSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_database_seeder_creates_five_students_and_four_courses_and_is_repeatable(): void
+    public function test_database_seeder_creates_poultryhub_roles_and_sample_listings_repeatably(): void
     {
         $this->seed();
         $this->seed();
 
-        $this->assertSame(5, StudentProfile::count());
-        $this->assertSame(5, User::role('student')->count());
-        $this->assertSame(3, User::role('lecturer')->count());
         $this->assertSame(1, User::role('admin')->count());
-        $this->assertSame(4, Course::count());
-        $this->assertDatabaseHas('student_profiles', [
-            'student_number' => 'STU-2024-0182',
-            'programme' => 'Computer Science',
-            'year' => 2,
-        ]);
-        $this->assertDatabaseHas('courses', [
-            'code' => 'IS301',
-            'name' => 'Database Systems',
-            'capacity' => 30,
-        ]);
+        $this->assertSame(1, User::role('farmer')->count());
+        $this->assertSame(1, User::role('supplier')->count());
+        $this->assertSame(1, User::role('consumer')->count());
+        $this->assertSame(3, Product::count());
 
         foreach ([
-            'admin@northstar.edu' => 'admin',
-            'elena.vasquez@northstar.edu' => 'lecturer',
-            'maya.chen@northstar.edu' => 'student',
+            'admin@poultryhub.ug' => 'admin',
+            'amina@poultryhub.ug' => 'farmer',
+            'feeds@poultryhub.ug' => 'supplier',
+            'shopper@poultryhub.ug' => 'consumer',
         ] as $email => $role) {
             $user = User::where('email', $email)->firstOrFail();
             $this->assertTrue($user->hasRole($role));
             $this->assertTrue(Hash::check('password', $user->password));
         }
+
+        $this->assertDatabaseHas('products', [
+            'name' => 'Free-range chicken',
+            'category' => 'poultry',
+            'price' => 25000,
+        ]);
+        $this->assertDatabaseHas('products', [
+            'name' => 'Layers mash (50kg)',
+            'category' => 'feed',
+            'price' => 85000,
+        ]);
     }
 }
