@@ -10,14 +10,14 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['admin', 'lecturer', 'student'] as $name) {
+        foreach (['admin', 'farmer', 'supplier', 'consumer'] as $name) {
             Role::findOrCreate($name, 'web');
         }
 
         $admin = User::firstOrCreate(
-            ['email' => 'admin@northstar.edu'],
+            ['email' => 'admin@poultryhub.ug'],
             [
-                'name' => 'Northstar Administrator',
+                'name' => 'PoultryHub Administrator',
                 'password' => 'password',
                 'email_verified_at' => now(),
             ]

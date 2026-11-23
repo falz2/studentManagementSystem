@@ -1,5 +1,9 @@
 import './bootstrap';
 
+if (document.querySelector('[data-farm-map], [data-order-delivery-map], [data-seller-location-form], [data-rider-share-map], [data-copy-value]')) {
+    import('./maps');
+}
+
 const searchInput = document.querySelector('[data-table-search]');
 
 if (searchInput) {

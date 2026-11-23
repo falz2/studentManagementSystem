@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,6 +30,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'latitude',
+        'longitude',
+        'map_visible',
     ];
 
     protected $hidden = [
@@ -47,6 +51,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'latitude' => 'float',
+            'longitude' => 'float',
+            'map_visible' => 'boolean',
         ];
     }
 
@@ -58,6 +65,56 @@ class User extends Authenticatable
     public function lecturerProfile(): HasOne
     {
         return $this->hasOne(LecturerProfile::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class, 'seller_id');
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Order::class, 'buyer_id');
+    }
+
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Order::class, 'seller_id');
+    }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function recurringOrders(): HasMany
+    {
+        return $this->hasMany(RecurringOrder::class, 'buyer_id');
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'buyer_id');
+    }
+
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function isFarmer(): bool
+    {
+        return $this->hasRole('farmer');
+    }
+
+    public function isSupplier(): bool
+    {
+        return $this->hasRole('supplier');
+    }
+
+    public function isConsumer(): bool
+    {
+        return $this->hasRole('consumer');
     }
 
     public function isStudent(): bool
